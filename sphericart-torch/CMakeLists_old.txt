@@ -113,15 +113,15 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/_build_torch_version.py "BUILD_TORCH_VERS
 
 add_library(sphericart_torch SHARED
     "include/sphericart/torch.hpp"
-    "include/sphericart/autograd_torch.hpp"
-    "src/autograd_torch.cpp"
+    "include/sphericart/autograd.hpp"
+    "src/autograd.cpp"
     "src/torch.cpp"
 )
 
 if (CMAKE_CUDA_COMPILER)
-    target_sources(sphericart_torch PUBLIC "src/cuda_base.cu")
+    target_sources(sphericart_torch PUBLIC "src/cuda.cu")
 else()
-    target_sources(sphericart_torch PUBLIC "src/cuda_stub_base.cpp")
+    target_sources(sphericart_torch PUBLIC "src/cuda_stub.cpp")
 endif()
 
 target_link_libraries(sphericart_torch PUBLIC torch sphericart)

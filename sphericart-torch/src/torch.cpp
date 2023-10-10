@@ -11,9 +11,19 @@ SphericalHarmonics::SphericalHarmonics(int64_t l_max, bool normalized, bool back
     normalized_(normalized),
     backward_second_derivatives_(backward_second_derivatives),
     calculator_double_(l_max_, normalized_),
-    calculator_float_(l_max_, normalized_),
-    prefactors_cuda_double_(prefactors_cuda(l_max, c10::kDouble)),
-    prefactors_cuda_float_(prefactors_cuda(l_max, c10::kFloat)) {
+    calculator_float_(l_max_, normalized_)//,
+    //prefactors_cuda_double_(prefactors_cuda(l_max, c10::kDouble)),
+    //prefactors_cuda_float_(prefactors_cuda(l_max, c10::kFloat)
+    {
+
+    self->prefactors_cuda_double_ = torch::empty({(l_max + 1) * (l_max + 2)}, torch::TensorOptions().device("cpu").dtype(c10::kDouble));
+    prefactors_cuda<double>(l_max, self.->prefactors_cuda_double_.data<double>());
+    self->prefactors_cuda_double_.to("cuda");
+
+    self->prefactors_cuda_float_ = torch::empty({(l_max + 1) * (l_max + 2)}, torch::TensorOptions().device("cpu").dtype(c10::kFloat));
+    prefactors_cuda<float>(l_max, self.->prefactors_cuda_float_.data<float>());
+    self->prefactors_cuda_float_.to("cuda");
+
     this->omp_num_threads_ = calculator_double_.get_omp_num_threads();
 }
 
