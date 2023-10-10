@@ -4,7 +4,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "sphericart/cuda.hpp"
+#include "sphericart/cuda_base.hpp"
 
 #define _SPHERICART_INTERNAL_IMPLEMENTATION
 #define CUDA_DEVICE_PREFIX __device__

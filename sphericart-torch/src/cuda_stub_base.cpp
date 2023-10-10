@@ -1,4 +1,4 @@
-#include "sphericart/cuda.hpp"
+#include "sphericart/cuda_base.hpp"
 
 #include <stdexcept>
 

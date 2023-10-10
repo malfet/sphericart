@@ -1,8 +1,8 @@
 #include "sphericart.hpp"
 
-#include "sphericart/autograd.hpp"
+#include "sphericart/autograd_torch.hpp"
 #include "sphericart/torch.hpp"
-#include "sphericart/cuda.hpp"
+#include "sphericart/cuda_base.hpp"
 
 using namespace sphericart_torch;
 
@@ -346,7 +346,7 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 {1, 1, 1, 1},
                 torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
         }
-        
+
         if (xyz.dtype() == c10::kDouble)
         {
             spherical_harmonics_cuda<double>(
