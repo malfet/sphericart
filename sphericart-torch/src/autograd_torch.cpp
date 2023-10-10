@@ -350,34 +350,34 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
         if (xyz.dtype() == c10::kDouble)
         {
             spherical_harmonics_cuda<double>(
-                xyz.data<double>(),
+                xyz.data_ptr<double>(),
                 xyz.size(0),
-                prefactors.data<double>(),
+                prefactors.data_ptr<double>(),
                 nprefactors,
                 calculator.l_max_,
                 calculator.CUDA_GRID_DIM_X_,
                 calculator.CUDA_GRID_DIM_Y_,
                 do_gradients || xyz.requires_grad(),
                 do_hessians || (xyz.requires_grad() && calculator.backward_second_derivatives_),
-                sph.data<double>(),
-                dsph.data<double>(),
-                ddsph.data<double>());
+                sph.data_ptr<double>(),
+                dsph.data_ptr<double>(),
+                ddsph.data_ptr<double>());
         }
         else if (xyz.dtype() == c10::kFloat)
         {
             spherical_harmonics_cuda<float>(
-                xyz.data<float>(),
+                xyz.data_ptr<float>(),
                 xyz.size(0),
-                prefactors.data<float>(),
+                prefactors.data_ptr<float>(),
                 nprefactors,
                 calculator.l_max_,
                 calculator.CUDA_GRID_DIM_X_,
                 calculator.CUDA_GRID_DIM_Y_,
                 do_gradients || xyz.requires_grad(),
                 do_hessians || (xyz.requires_grad() && calculator.backward_second_derivatives_),
-                sph.data<float>(),
-                dsph.data<float>(),
-                ddsph.data<float>());
+                sph.data_ptr<float>(),
+                dsph.data_ptr<float>(),
+                ddsph.data_ptr<float>());
         }
         else
         {
@@ -452,22 +452,22 @@ torch::Tensor SphericalHarmonicsAutogradBackward::forward(
             if (xyz.dtype() == c10::kDouble)
             {
                 spherical_harmonics_backward_cuda<double>(
-                    dsph.data<double>(),
-                    grad_outputs.data<double>(),
+                    dsph.data_ptr<double>(),
+                    grad_outputs.data_ptr<double>(),
                     xyz.size(0),
                     lmax,
                     xyz.requires_grad(),
-                    xyz_grad.data<double>());
+                    xyz_grad.data_ptr<double>());
             }
             else if (xyz.dtype() == c10::kFloat)
             {
                 spherical_harmonics_backward_cuda<float>(
-                    dsph.data<float>(),
-                    grad_outputs.data<float>(),
+                    dsph.data_ptr<float>(),
+                    grad_outputs.data_ptr<float>(),
                     xyz.size(0),
                     lmax,
                     xyz.requires_grad(),
-                    xyz_grad.data<float>());
+                    xyz_grad.data_ptr<float>());
             }
         }
         else

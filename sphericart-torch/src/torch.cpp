@@ -17,11 +17,11 @@ SphericalHarmonics::SphericalHarmonics(int64_t l_max, bool normalized, bool back
     {
 
     self->prefactors_cuda_double_ = torch::empty({(l_max + 1) * (l_max + 2)}, torch::TensorOptions().device("cpu").dtype(c10::kDouble));
-    prefactors_cuda<double>(l_max, self.->prefactors_cuda_double_.data<double>());
+    prefactors_cuda<double>(l_max, self.->prefactors_cuda_double_.data_ptr<double>());
     self->prefactors_cuda_double_.to("cuda");
 
     self->prefactors_cuda_float_ = torch::empty({(l_max + 1) * (l_max + 2)}, torch::TensorOptions().device("cpu").dtype(c10::kFloat));
-    prefactors_cuda<float>(l_max, self.->prefactors_cuda_float_.data<float>());
+    prefactors_cuda<float>(l_max, self.->prefactors_cuda_float_.data_ptr<float>());
     self->prefactors_cuda_float_.to("cuda");
 
     this->omp_num_threads_ = calculator_double_.get_omp_num_threads();
