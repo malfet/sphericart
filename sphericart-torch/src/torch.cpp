@@ -7,23 +7,16 @@
 
 using namespace sphericart_torch;
 
-// extern template void sphericart_torch::prefactors_cuda<float>(int64_t l_max, float * __restrict__ ptr);
-// extern template void sphericart_torch::prefactors_cuda<double>(int64_t l_max, double * __restrict__ ptr);
-
 SphericalHarmonics::SphericalHarmonics(int64_t l_max, bool normalized, bool backward_second_derivatives) : l_max_(l_max),
                                                                                                            normalized_(normalized),
                                                                                                            backward_second_derivatives_(backward_second_derivatives),
                                                                                                            calculator_double_(l_max_, normalized_),
-                                                                                                           calculator_float_(l_max_, normalized_) //,
-// prefactors_cuda_double_(prefactors_cuda(l_max, c10::kDouble)),
-// prefactors_cuda_float_(prefactors_cuda(l_max, c10::kFloat)
+                                                                                                           calculator_float_(l_max_, normalized_)
 {
-
     this->prefactors_cuda_double_ = torch::empty({(l_max + 1) * (l_max + 2)}, torch::TensorOptions().device("cpu").dtype(c10::kDouble));
 
     prefactors_cuda<double>(l_max, this->prefactors_cuda_double_.data_ptr<double>());
     this->prefactors_cuda_double_ = this->prefactors_cuda_double_.to("cuda");
-
 
     this->prefactors_cuda_float_ = torch::empty({(l_max + 1) * (l_max + 2)}, torch::TensorOptions().device("cpu").dtype(c10::kFloat));
     prefactors_cuda<float>(l_max, this->prefactors_cuda_float_.data_ptr<float>());
