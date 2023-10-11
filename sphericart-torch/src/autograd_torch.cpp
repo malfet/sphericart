@@ -335,6 +335,10 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
         }
 
+        std::cout << sph.sizes() << std::endl;
+        std::cout << dsph.sizes() << std::endl;
+        std::cout << ddsph.sizes() << std::endl;
+
         if (xyz.dtype() == c10::kDouble)
         {
             spherical_harmonics_cuda<double>(
