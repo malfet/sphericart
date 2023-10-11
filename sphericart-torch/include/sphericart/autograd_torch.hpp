@@ -1,5 +1,5 @@
-#ifndef SPHERICART_TORCH_AUTOGRAD_HPP
-#define SPHERICART_TORCH_AUTOGRAD_HPP
+#ifndef SPHERICART_TORCH_AUTOGRAD_TORCH_HPP
+#define SPHERICART_TORCH_AUTOGRAD_TORCH_HPP
 
 #include <torch/data.h>
 #include <torch/autograd.h>
@@ -30,7 +30,8 @@ public:
         torch::autograd::AutogradContext *ctx,
         torch::Tensor grad_outputs,
         torch::Tensor xyz,
-        std::vector<torch::Tensor> saved_variables
+        std::vector<torch::Tensor> saved_variables,
+        int lmax
     );
 
     static torch::autograd::variable_list backward(

@@ -245,7 +245,6 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
 
     ctx->saved_data["lmax"] = calculator.l_max_;
     ctx->saved_data["ntotal"] = n_total;
-    ctx->saved_data["nprefactors"] = 0; // TODO
 
     if (xyz.device().is_cpu())
     {
@@ -353,8 +352,9 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 xyz.data_ptr<double>(),
                 xyz.size(0),
                 prefactors.data_ptr<double>(),
-                nprefactors,
+                (calculator.l_max_ + 1) * (calculator.l_max_ + 2), // nprefactors
                 calculator.l_max_,
+                calculator.normalized_,
                 calculator.CUDA_GRID_DIM_X_,
                 calculator.CUDA_GRID_DIM_Y_,
                 do_gradients || xyz.requires_grad(),
@@ -369,8 +369,9 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 xyz.data_ptr<float>(),
                 xyz.size(0),
                 prefactors.data_ptr<float>(),
-                nprefactors,
+                (calculator.l_max_ + 1) * (calculator.l_max_ + 2),
                 calculator.l_max_,
+                calculator.normalized_,
                 calculator.CUDA_GRID_DIM_X_,
                 calculator.CUDA_GRID_DIM_Y_,
                 do_gradients || xyz.requires_grad(),
@@ -421,7 +422,7 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::backward(
     auto saved_variables = ctx->get_saved_variables();
     // We extract xyz and pass it as a separate variable because we will need gradients with respect to it
     auto xyz = saved_variables[0];
-    auto lmax = ctx->saved_data["lmax"];
+    int lmax = ctx->saved_data["lmax"].toInt();
     torch::Tensor xyz_grad = SphericalHarmonicsAutogradBackward::apply(grad_outputs[0], xyz, saved_variables, lmax);
     return {torch::Tensor(), xyz_grad, torch::Tensor(), torch::Tensor()};
 }
