@@ -321,8 +321,6 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
         }
 
-        // if (xyz.requires_grad() && do_hessians)
-
         if (do_hessians || (xyz.requires_grad() && calculator.backward_second_derivatives_))
         {
             ddsph = torch::empty(
