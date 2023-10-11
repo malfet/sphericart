@@ -9,31 +9,31 @@ bool sphericart_torch::adjust_cuda_shared_memory(size_t, int64_t, int64_t, int64
 
 template <typename scalar_t>
 void sphericart_torch::spherical_harmonics_cuda(
-    scalar_t *__restrict__,
+    scalar_t *,
     int64_t,
-    scalar_t *__restrict__,
-    int64_t,
-    int64_t,
-    bool,
+    scalar_t *,
     int64_t,
     int64_t,
     bool,
+    int64_t,
+    int64_t,
     bool,
-    scalar_t *__restrict__,
-    scalar_t *__restrict__,
-    scalar_t *__restrict__)
+    bool,
+    scalar_t *,
+    scalar_t *,
+    scalar_t *)
 {
     throw std::runtime_error("sphericart_torch was not compiled with CUDA support");
 }
 
 template <typename scalar_t>
 void sphericart_torch::spherical_harmonics_backward_cuda(
-    scalar_t *__restrict__,
-    scalar_t *__restrict__,
+    scalar_t *,
+    scalar_t *,
     int64_t,
     int64_t,
     bool,
-    scalar_t *__restrict__)
+    scalar_t *)
 {
     throw std::runtime_error("sphericart_torch was not compiled with CUDA support");
 }
@@ -41,7 +41,7 @@ void sphericart_torch::spherical_harmonics_backward_cuda(
 template <typename scalar_t>
 void sphericart_torch::prefactors_cuda(
     const int64_t,
-    scalar_t *__restrict__)
+    scalar_t *)
 {
     return at::Tensor();
 }

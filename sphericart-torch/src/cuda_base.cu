@@ -54,22 +54,22 @@ __device__ int get_index(int i) { return i * blockDim.y + threadIdx.y; }
 template <typename scalar_t>
 __device__ inline void clear_buffers(
     int nelements,
-    scalar_t *__restrict__ sph,
-    scalar_t *__restrict__ dsph_x,
-    scalar_t *__restrict__ dsph_y,
-    scalar_t *__restrict__ dsph_z,
+    scalar_t *sph,
+    scalar_t *dsph_x,
+    scalar_t *dsph_y,
+    scalar_t *dsph_z,
 
-    scalar_t *__restrict__ dsph_dxdx,
-    scalar_t *__restrict__ dsph_dxdy,
-    scalar_t *__restrict__ dsph_dxdz,
+    scalar_t *dsph_dxdx,
+    scalar_t *dsph_dxdy,
+    scalar_t *dsph_dxdz,
 
-    scalar_t *__restrict__ dsph_dydx,
-    scalar_t *__restrict__ dsph_dydy,
-    scalar_t *__restrict__ dsph_dydz,
+    scalar_t *dsph_dydx,
+    scalar_t *dsph_dydy,
+    scalar_t *dsph_dydz,
 
-    scalar_t *__restrict__ dsph_dzdx,
-    scalar_t *__restrict__ dsph_dzdy,
-    scalar_t *__restrict__ dsph_dzdz,
+    scalar_t *dsph_dzdx,
+    scalar_t *dsph_dzdy,
+    scalar_t *dsph_dzdz,
     bool requires_grad,
     bool requires_hessian)
 {
@@ -116,26 +116,26 @@ __device__ inline void write_buffers(
     int64_t n_elements,
     int64_t offset,
     int64_t lmax,
-    scalar_t *__restrict__ buffer_sph,
+    scalar_t *buffer_sph,
 
-    scalar_t *__restrict__ buffer_dsph_x,
-    scalar_t *__restrict__ buffer_dsph_y,
-    scalar_t *__restrict__ buffer_dsph_z,
+    scalar_t *buffer_dsph_x,
+    scalar_t *buffer_dsph_y,
+    scalar_t *buffer_dsph_z,
 
-    scalar_t *__restrict__ buffer_dsph_dxdx,
-    scalar_t *__restrict__ buffer_dsph_dxdy,
-    scalar_t *__restrict__ buffer_dsph_dxdz,
+    scalar_t *buffer_dsph_dxdx,
+    scalar_t *buffer_dsph_dxdy,
+    scalar_t *buffer_dsph_dxdz,
 
-    scalar_t *__restrict__ buffer_dsph_dydx,
-    scalar_t *__restrict__ buffer_dsph_dydy,
-    scalar_t *__restrict__ buffer_dsph_dydz,
+    scalar_t *buffer_dsph_dydx,
+    scalar_t *buffer_dsph_dydy,
+    scalar_t *buffer_dsph_dydz,
 
-    scalar_t *__restrict__ buffer_dsph_dzdx,
-    scalar_t *__restrict__ buffer_dsph_dzdy,
-    scalar_t *__restrict__ buffer_dsph_dzdz,
-    scalar_t *__restrict__ sph,
-    scalar_t *__restrict__ dsph,
-    scalar_t *__restrict__ ddsph,
+    scalar_t *buffer_dsph_dzdx,
+    scalar_t *buffer_dsph_dzdy,
+    scalar_t *buffer_dsph_dzdz,
+    scalar_t *sph,
+    scalar_t *dsph,
+    scalar_t *ddsph,
     bool requires_grad,
     bool requires_hessian,
     bool normalize)
@@ -246,17 +246,17 @@ __device__ inline void write_buffers(
 */
 template <typename scalar_t>
 __global__ void spherical_harmonics_kernel(
-    scalar_t *__restrict__ xyz,
+    scalar_t *xyz,
     int64_t nsamples,
-    scalar_t *__restrict__ prefactors,
+    scalar_t *prefactors,
     int64_t nprefactors,
     int64_t lmax,
     bool normalize,
     bool requires_grad,
     bool requires_hessian,
-    scalar_t *__restrict__ sph,  // nedges, nsph_harmonics: (lmax + 1) ** 2
-    scalar_t *__restrict__ dsph, // nedges, 3, nsph_harmonics
-    scalar_t *__restrict__ ddsph // nedges, 3, 3, nsph_harmonics
+    scalar_t *sph,  // nedges, nsph_harmonics: (lmax + 1) ** 2
+    scalar_t *dsph, // nedges, 3, nsph_harmonics
+    scalar_t *ddsph // nedges, 3, 3, nsph_harmonics
 )
 {
     extern __shared__ char buffer[];
@@ -343,7 +343,8 @@ __global__ void spherical_harmonics_kernel(
     {
         for (int i = threadIdx.x; i < nprefactors; i += blockDim.x)
         {
-            buffer_prefactors[i] = prefactors[i];
+            scalar_t tmp = prefactors[i];
+            buffer_prefactors[i] = tmp;
         }
     }
     __syncthreads();
@@ -735,9 +736,9 @@ bool sphericart_torch::adjust_cuda_shared_memory(
 
 template <typename scalar_t>
 void sphericart_torch::spherical_harmonics_cuda(
-    scalar_t *__restrict__ xyz,
+    scalar_t *xyz,
     int64_t nsamples,
-    scalar_t *__restrict__ prefactors,
+    scalar_t *prefactors,
     int64_t nprefactors,
     int64_t l_max,
     bool normalize,
@@ -745,21 +746,21 @@ void sphericart_torch::spherical_harmonics_cuda(
     int64_t GRID_DIM_Y,
     bool gradients,
     bool hessian,
-    scalar_t *__restrict__ sph,
-    scalar_t *__restrict__ dsph,
-    scalar_t *__restrict__ ddsph)
+    scalar_t *sph,
+    scalar_t *dsph,
+    scalar_t *ddsph)
 {
     int device;
     CUDA_ERROR_CHECK(cudaGetDevice(&device));
 
-    CUDA_DEVICE_CHECK(device, xyz);
-    CUDA_DEVICE_CHECK(device, prefactors);
-    CUDA_DEVICE_CHECK(device, sph);
+    // CUDA_DEVICE_CHECK(device, xyz);
+    // CUDA_DEVICE_CHECK(device, prefactors);
+    // CUDA_DEVICE_CHECK(device, sph);
 
-    if (gradients)
-        CUDA_DEVICE_CHECK(device, dsph);
-    if (hessian)
-        CUDA_DEVICE_CHECK(device, ddsph);
+    // if (gradients)
+    //     CUDA_DEVICE_CHECK(device, dsph);
+    // if (hessian)
+    //     CUDA_DEVICE_CHECK(device, ddsph);
 
     int n_total = (l_max + 1) * (l_max + 1);
 
@@ -791,34 +792,34 @@ void sphericart_torch::spherical_harmonics_cuda(
 
 // instantiates the spherical_harmonics_cuda method for basic floating point types
 template void sphericart_torch::spherical_harmonics_cuda<float>(
-    float * __restrict__,
+    float *,
     int64_t,
-    float * __restrict__,
-    int64_t,
-    int64_t,
-    bool,
+    float *,
     int64_t,
     int64_t,
     bool,
+    int64_t,
+    int64_t,
     bool,
-    float * __restrict__,
-    float * __restrict__,
-    float * __restrict__);
+    bool,
+    float *,
+    float *,
+    float *);
 
 template void sphericart_torch::spherical_harmonics_cuda<double>(
-    double * __restrict__,
+    double *,
     int64_t,
-    double * __restrict__,
-    int64_t,
-    int64_t,
-    bool,
+    double *,
     int64_t,
     int64_t,
     bool,
+    int64_t,
+    int64_t,
     bool,
-    double * __restrict__,
-    double * __restrict__,
-    double * __restrict__);
+    bool,
+    double *,
+    double *,
+    double *);
 
 /*
     CUDA kernel to computes the backwards pass for autograd.
@@ -826,11 +827,11 @@ template void sphericart_torch::spherical_harmonics_cuda<double>(
 
 template <typename scalar_t>
 __global__ void backward_kernel(
-    scalar_t *__restrict__ dsph,
-    scalar_t *__restrict__ sph_grad,
+    scalar_t *dsph,
+    scalar_t *sph_grad,
     int64_t nsamples,
     int64_t lmax,
-    scalar_t *__restrict__ xyz_grad)
+    scalar_t *xyz_grad)
 {
     size_t sample_idx = blockIdx.x * blockDim.y + threadIdx.y;
     int spatial = blockIdx.y;
@@ -867,21 +868,21 @@ __global__ void backward_kernel(
 */
 template <typename scalar_t>
 void sphericart_torch::spherical_harmonics_backward_cuda(
-    scalar_t *__restrict__ dsph,
-    scalar_t *__restrict__ sph_grad,
+    scalar_t *dsph,
+    scalar_t *sph_grad,
     int64_t nsamples,
     int64_t lmax,
     bool requires_grad,
-    scalar_t *__restrict__ xyz_grad)
+    scalar_t *xyz_grad)
 {
     if (requires_grad)
     {
 
         int device;
         CUDA_ERROR_CHECK(cudaGetDevice(&device));
-        CUDA_DEVICE_CHECK(device, dsph);
-        CUDA_DEVICE_CHECK(device, sph_grad);
-        CUDA_DEVICE_CHECK(device, xyz_grad);
+        // CUDA_DEVICE_CHECK(device, dsph);
+        // CUDA_DEVICE_CHECK(device, sph_grad);
+        // CUDA_DEVICE_CHECK(device, xyz_grad);
 
         dim3 grid_dim(4, 32);
 
@@ -903,28 +904,28 @@ void sphericart_torch::spherical_harmonics_backward_cuda(
 
 // instantiates the spherical_harmonics_backward_cuda method for basic floating point types
 template void sphericart_torch::spherical_harmonics_backward_cuda<float>(
-    float * __restrict__,
-    float * __restrict__,
+    float *,
+    float *,
     int64_t,
     int64_t,
     bool,
-    float * __restrict__);
+    float *);
 
 template void sphericart_torch::spherical_harmonics_backward_cuda<double>(
-    double * __restrict__,
-    double * __restrict__,
+    double *,
+    double *,
     int64_t,
     int64_t,
     bool,
-    double * __restrict__);
+    double *);
 /*
     wrapper to compute prefactors with correct dtype.
 */
 template <typename scalar_t>
 void sphericart_torch::prefactors_cuda(
     int64_t l_max,
-    scalar_t *__restrict__ prefactors)
-{
+    scalar_t *prefactors)
+{   
     // auto result = torch::empty({(l_max + 1) * (l_max + 2)}, torch::TensorOptions().device("cpu").dtype(dtype));
 
     if (sizeof(scalar_t) != 8 and sizeof(scalar_t) != 4)
@@ -935,10 +936,9 @@ void sphericart_torch::prefactors_cuda(
     {
         compute_sph_prefactors<scalar_t>(l_max, prefactors);
     }
-
     // return result.to("cuda");
 }
 
 // instantiates the prefactors_cuda method for basic floating point types
-template void sphericart_torch::prefactors_cuda<float>(int64_t, float *__restrict__);
-template void sphericart_torch::prefactors_cuda<double>(int64_t, double *__restrict__);
+template void sphericart_torch::prefactors_cuda<float>(int64_t, float *);
+template void sphericart_torch::prefactors_cuda<double>(int64_t, double *);

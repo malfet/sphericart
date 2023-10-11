@@ -40,6 +40,7 @@ class cmake_ext(build_ext):
             f"-DCMAKE_INSTALL_PREFIX={install_dir}",
             "-DBUILD_SHARED_LIBS=ON",
             f"-DSPHERICART_ARCH_NATIVE={SPHERICART_ARCH_NATIVE}",
+            f"-DCMAKE_BUILD_TYPE=Debug",
         ]
 
         if sys.platform.startswith("darwin"):

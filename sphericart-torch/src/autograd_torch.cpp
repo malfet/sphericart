@@ -3,6 +3,8 @@
 #include "sphericart/autograd_torch.hpp"
 #include "sphericart/torch.hpp"
 #include "sphericart/cuda_base.hpp"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 using namespace sphericart_torch;
 
@@ -227,6 +229,7 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
     bool do_gradients,
     bool do_hessians)
 {
+
     if (xyz.sizes().size() != 2)
     {
         throw std::runtime_error("xyz tensor must be a 2D array");
@@ -299,21 +302,7 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 printf("shared memory update OK.\n");
             }
         }
-
-        auto prefactors = torch::Tensor();
-        if (xyz.dtype() == c10::kDouble)
-        {
-            prefactors = calculator.prefactors_cuda_double_;
-        }
-        else if (xyz.dtype() == c10::kFloat)
-        {
-            prefactors = calculator.prefactors_cuda_float_;
-        }
-        else
-        {
-            throw std::runtime_error("this code only runs on float64 and float32 arrays");
-        }
-
+        
         sph = torch::empty(
             {xyz.size(0), n_total},
             torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
@@ -346,12 +335,19 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
         }
 
+        //int device;
+        //cudaGetDevice(&device);
+        //std::cout << "..." << std::endl;
+        //std::cout << calculator.prefactors_cuda_double_ << std::endl;
+        //std::cout << device << std::endl;
+        //std::cout << calculator.prefactors_cuda_double_.device() << std::endl;
+
         if (xyz.dtype() == c10::kDouble)
         {
             spherical_harmonics_cuda<double>(
                 xyz.data_ptr<double>(),
                 xyz.size(0),
-                prefactors.data_ptr<double>(),
+                calculator.prefactors_cuda_double_.data_ptr<double>(),
                 (calculator.l_max_ + 1) * (calculator.l_max_ + 2), // nprefactors
                 calculator.l_max_,
                 calculator.normalized_,
@@ -368,7 +364,7 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
             spherical_harmonics_cuda<float>(
                 xyz.data_ptr<float>(),
                 xyz.size(0),
-                prefactors.data_ptr<float>(),
+                calculator.prefactors_cuda_float_.data_ptr<float>(),
                 (calculator.l_max_ + 1) * (calculator.l_max_ + 2),
                 calculator.l_max_,
                 calculator.normalized_,
