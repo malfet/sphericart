@@ -302,7 +302,7 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 printf("shared memory update OK.\n");
             }
         }
-        
+
         sph = torch::empty(
             {xyz.size(0), n_total},
             torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
@@ -321,7 +321,9 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
         }
 
-        if (xyz.requires_grad() && do_hessians)
+        // if (xyz.requires_grad() && do_hessians)
+
+        if (do_hessians || (xyz.requires_grad() && calculator.backward_second_derivatives_))
         {
             ddsph = torch::empty(
                 {xyz.size(0), 3, 3, n_total},
@@ -334,13 +336,6 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 {1, 1, 1, 1},
                 torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
         }
-
-        //int device;
-        //cudaGetDevice(&device);
-        //std::cout << "..." << std::endl;
-        //std::cout << calculator.prefactors_cuda_double_ << std::endl;
-        //std::cout << device << std::endl;
-        //std::cout << calculator.prefactors_cuda_double_.device() << std::endl;
 
         if (xyz.dtype() == c10::kDouble)
         {
