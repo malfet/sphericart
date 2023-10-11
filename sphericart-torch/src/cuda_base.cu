@@ -918,6 +918,7 @@ template void sphericart_torch::spherical_harmonics_backward_cuda<double>(
     int64_t,
     bool,
     double *);
+    
 /*
     wrapper to compute prefactors with correct dtype.
 */
