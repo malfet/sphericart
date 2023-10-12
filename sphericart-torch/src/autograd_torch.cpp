@@ -335,10 +335,6 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
                 torch::TensorOptions().dtype(xyz.dtype()).device(xyz.device()));
         }
 
-        std::cout << sph.sizes() << std::endl;
-        std::cout << dsph.sizes() << std::endl;
-        std::cout << ddsph.sizes() << std::endl;
-
         if (xyz.dtype() == c10::kDouble)
         {
             spherical_harmonics_cuda<double>(
@@ -382,6 +378,12 @@ torch::autograd::variable_list SphericalHarmonicsAutograd::forward(
     {
         throw std::runtime_error("Spherical harmonics are only implemented for CPU and CUDA");
     }
+
+    // Restore unused tensors to torch::Tensor():
+    if (!(xyz.requires_grad() || do_gradients))
+        dsph = torch::Tensor();
+    if (!(do_hessians || (xyz.requires_grad() && calculator.backward_second_derivatives_)))
+        ddsph = torch::Tensor();
 
     if (xyz.requires_grad())
     {
@@ -431,6 +433,19 @@ torch::Tensor SphericalHarmonicsAutogradBackward::forward(
     auto ddsph = saved_variables[2];
 
     auto xyz_grad = torch::Tensor();
+    //if (grad_outputs.dtype() == c10::kDouble)
+    //{
+    //    std::cout << "GRAD OUTPUTS (double) " << grad_outputs.sizes() << " pointer: " << grad_outputs.data_ptr<double>() << std::endl;
+    // }
+    //else
+    //{
+     //   std::cout << "GRAD OUTPUTS (float) " << grad_outputs.sizes() << " pointer: " << grad_outputs.data_ptr<float>() << std::endl;
+   // }
+
+    // std::cout << grad_outputs << std::endl;
+    //std::cout << "DSPH OUTPUTS " << dsph.sizes() << std::endl;
+    // std::cout << dsph << std::endl;
+
     if (xyz.requires_grad())
     {
         if (xyz.device().is_cpu())
