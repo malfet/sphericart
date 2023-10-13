@@ -16,9 +16,9 @@ namespace sphericart_torch
 
     template <typename scalar_t>
     void spherical_harmonics_cuda(
-        scalar_t * __restrict__ xyz,
+        scalar_t *  xyz,
         int64_t nsamples,
-        scalar_t * __restrict__ prefactors,
+        scalar_t *  prefactors,
         int64_t nprefactors,
         int64_t l_max,
         bool normalize,
@@ -26,18 +26,18 @@ namespace sphericart_torch
         int64_t GRID_DIM_Y,
         bool gradients,
         bool hessian,
-        scalar_t * __restrict__ sph,
-        scalar_t * __restrict__ dsph,
-        scalar_t * __restrict__ ddsph);
+        scalar_t *  sph,
+        scalar_t *  dsph,
+        scalar_t *  ddsph);
 
     template <typename scalar_t>
     void spherical_harmonics_backward_cuda(
-        scalar_t * __restrict__ dsph,
-        scalar_t * __restrict__ sph_grad,
+        scalar_t *  dsph,
+        scalar_t *  sph_grad,
         int64_t nsamples,
         int64_t lmax,
         bool requires_grad,
-        scalar_t * __restrict__ xyz_grad);
+        scalar_t *  xyz_grad);
 
     template <typename scalar_t>
     void prefactors_cuda(

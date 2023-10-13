@@ -433,18 +433,6 @@ torch::Tensor SphericalHarmonicsAutogradBackward::forward(
     auto ddsph = saved_variables[2];
 
     auto xyz_grad = torch::Tensor();
-    //if (grad_outputs.dtype() == c10::kDouble)
-    //{
-    //    std::cout << "GRAD OUTPUTS (double) " << grad_outputs.sizes() << " pointer: " << grad_outputs.data_ptr<double>() << std::endl;
-    // }
-    //else
-    //{
-     //   std::cout << "GRAD OUTPUTS (float) " << grad_outputs.sizes() << " pointer: " << grad_outputs.data_ptr<float>() << std::endl;
-   // }
-
-    // std::cout << grad_outputs << std::endl;
-    //std::cout << "DSPH OUTPUTS " << dsph.sizes() << std::endl;
-    // std::cout << dsph << std::endl;
 
     if (xyz.requires_grad())
     {
@@ -460,6 +448,8 @@ torch::Tensor SphericalHarmonicsAutogradBackward::forward(
 
             if (xyz.dtype() == c10::kDouble)
             {
+                std::cout << "grad_outputs from C++: " << grad_outputs << std::endl;
+                std::cout << "dsph from C++: " << dsph << std::endl;
                 spherical_harmonics_backward_cuda<double>(
                     dsph.data_ptr<double>(),
                     grad_outputs.data_ptr<double>(),
@@ -467,6 +457,8 @@ torch::Tensor SphericalHarmonicsAutogradBackward::forward(
                     lmax,
                     xyz.requires_grad(),
                     xyz_grad.data_ptr<double>());
+
+                std::cout << "xyz_grad from C++: " << xyz_grad << std::endl;
             }
             else if (xyz.dtype() == c10::kFloat)
             {
